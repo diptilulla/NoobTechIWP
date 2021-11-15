@@ -1,0 +1,13 @@
+.grid-wrapper{
+    box-sizing: border-box;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill,minmax(300px,320px)) ;
+    column-gap: 18px;
+    row-gap: 18px;
+    margin: 0;
+
+    // .grid-items {
+    //     max-width: 30%;
+    // }
+}
