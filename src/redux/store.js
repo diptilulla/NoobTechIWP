@@ -1,4 +1,5 @@
 import { configureStore, getDefaultMiddleware } from "@reduxjs/toolkit";
+import { persistStore } from "redux-persist"; //cache
 
 import logger from "redux-logger";
 
@@ -14,6 +15,8 @@ export const store = configureStore({
   reducer: rootReducer,
   middleware: [
     ...getDefaultMiddleware({ serializableCheck: false }),
-    ...middlewares,
-  ],
+    ...middlewares
+  ]
 });
+
+export const persistor = persistStore(store);

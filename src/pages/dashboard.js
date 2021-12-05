@@ -5,13 +5,14 @@ import {
   chatroomsSelector,
   getAllChatrooms,
   getAllInterestChatrooms,
-  selectChatroomsStatus,
+  selectChatroomsStatus
 } from "../redux/features/chatroom/chatroomSlice";
 import { useDispatch, useSelector } from "react-redux";
 import ChatroomCard from "../components/chatroomCard";
 import Navbar from "../components/navbar";
 import { CircularProgress } from "@material-ui/core";
 import Gallery from "../components/gallery/gallery";
+import { navigate } from "gatsby-link";
 
 const useStyles = makeStyles((theme) => ({
   avatar: {
@@ -20,9 +21,9 @@ const useStyles = makeStyles((theme) => ({
     width: "54px !important",
     margin: "10px auto",
     "& img": {
-      width: "100%",
-    },
-  },
+      width: "100%"
+    }
+  }
 }));
 
 function Dashboard() {
@@ -54,7 +55,9 @@ function Dashboard() {
         viewAllChatrooms &&
         (!allChatroomsArray.length ||
           allChatroomsArray.length === interestedChatroomsIds.length ||
-          allChatroomsArray.length === userChatroomsIds.length),
+          allChatroomsArray.length === userChatroomsIds.length ||
+          allChatroomsArray.length ===
+            userChatroomsIds.length + interestedChatroomsIds.length)
     });
     if (
       viewAllChatrooms &&
@@ -70,6 +73,12 @@ function Dashboard() {
     <>
       <Navbar />
       <div className="p-10">
+        <button
+          className="block px-3 bg-gray-dark text-white p-2 hover:shadow-md px-8 rounded-3xl m-6"
+          onClick={() => navigate("/chatroom")}
+        >
+          Create chatroom
+        </button>
         {chatroomStatus === "get loading" ? (
           <div className="w-max mx-auto p-20">
             <CircularProgress color="inherit" />

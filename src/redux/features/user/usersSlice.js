@@ -1,12 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { logIn, logOut, register } from "../../../services/auth/auth";
-import { store } from "../../store";
+import { logIn, register } from "../../../services/auth/auth";
 import { getProfile, unsetProfile } from "../profile/profileSlice";
-import {
-  setAccessToken,
-  setRefreshToken,
-  unsetToken,
-} from "../token/tokenSlice";
 import { setPopup } from "../popup/popupSlice";
 import { getAllUserChatrooms } from "../chatroom/chatroomSlice";
 
@@ -40,15 +34,8 @@ export const signUp = createAsyncThunk(
 export const signOut = createAsyncThunk(
   "user/signout",
   async (navigate, { dispatch }) => {
-    // const reduxState = store.getState();
-    // const refreshToken = reduxState.token.refreshToken;
-    // const data = await logOut(refreshToken);
-    // if (data.success) {
-    // dispatch(unsetToken());
     dispatch(unsetProfile());
     navigate("/");
-    // }
-    // return data;
   }
 );
 

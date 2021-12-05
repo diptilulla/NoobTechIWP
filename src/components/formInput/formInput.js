@@ -5,8 +5,12 @@ import "./form-input.styles.scss";
 const FormInput = (
   { handleChange, label, ...otherProps } //other props are type name value etc
 ) => (
-  <div className="group">
-    <input className="form-input" {...otherProps} onChange={handleChange} />
+  <div className={`group ${otherProps.margin && "margin"}`}>
+    <input
+      className={`form-input ${otherProps.margin && "margin-input"}`}
+      {...otherProps}
+      onChange={handleChange}
+    />
     {
       label ? (
         <label

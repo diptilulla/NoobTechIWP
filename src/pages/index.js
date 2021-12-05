@@ -16,9 +16,35 @@ import profile from "../images/profile.png";
 import goal from "../images/goal.png";
 import "@fontsource/inter";
 import "@fontsource/poppins";
+import { selectProfile } from "../redux/features/profile/profileSlice";
+import { subscribetonotifications } from "../services/notifications/notifications";
 
 function IndexPage() {
+  const userprofile = useSelector(selectProfile);
+  const enableNotifications = async () => {
+    if (userprofile?.id) {
+      if (userprofile.interests.length === 0) {
+        alert("Select interests");
+        return;
+      }
+      const sw = await navigator.serviceWorker.register("/sw.js", {
+        scope: "/"
+      });
+      console.log(sw);
+      let subscription = await sw.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey:
+          "BC-8gZs5eRSZLBRjaocBL0p0gtktAGB1-Qau3qY_EHfI2frHZXSqQEZz58lEwXv0fQvvuFekuqqi5A_cT6LfFiE"
+      });
+      const res = await subscribetonotifications({
+        subscription,
+        user_id: userprofile.user_id,
+        interests: userprofile.interests
+      });
+    }
+  };
   const popup = useSelector(selectPopup);
+
   return (
     <>
       <div className={`${popup ? "opacity-50" : ""}`}>
@@ -27,6 +53,12 @@ function IndexPage() {
           <div className="box-1">
             <span className="text-7xl">Learn Adapt Overcome.</span>
             <button id="getStarted">Get started</button>
+            <button
+              className="px-3 lg:text-md ml-2 bg-gray-dark text-white p-2 hover:shadow-md px-8 rounded-3xl m-8"
+              onClick={enableNotifications}
+            >
+              Enable Notifications
+            </button>
           </div>
           <div className="box-2">
             <img src={stairs} />

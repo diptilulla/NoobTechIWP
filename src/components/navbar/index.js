@@ -83,6 +83,15 @@ function Navbar() {
                 </Link>
               </li>
               <li className="my-3 lg:my-1 flex items-center list">
+                <Link
+                  to="/tasks"
+                  className="px-3  lg:text-md leading-snug hover:text-purple"
+                  onClick={handleScroll}
+                >
+                  <span className="ml-2">Tasks</span>
+                </Link>
+              </li>
+              <li className="my-3 lg:my-1 flex items-center list">
                 <button
                   className="px-3 lg:text-md ml-2 bg-purple-dark text-white p-2 hover:shadow-md px-8 rounded-3xl"
                   onClick={currentUser ? logout : openForm}

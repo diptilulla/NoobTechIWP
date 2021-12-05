@@ -31,8 +31,11 @@ function Gallery({ heading, type }) {
         );
         setChatrooms(userChatroomsIds.length ? userchatrooms : []);
         break;
+      default:
+        setChatrooms([]);
     }
   }, [
+    type,
     interestedChatroomsIds,
     allChatroomsEntities,
     allChatroomsArray,

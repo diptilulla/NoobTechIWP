@@ -1,13 +1,26 @@
 const axios = require("axios");
 
+export async function getchatroom(data) {
+  const res = await axios.post(
+    process.env.GATSBY_BACKEND_LINK + "chatroom/getchatroom",
+    data,
+    {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }
+  );
+  return res["data"];
+}
+
 export async function setchatroom(data) {
   const res = await axios.post(
     process.env.GATSBY_BACKEND_LINK + "chatroom/setchatroom",
     data,
     {
       headers: {
-        "Content-Type": "application/json",
-      },
+        "Content-Type": "application/json"
+      }
     }
   );
   return res["data"];
@@ -19,8 +32,8 @@ export async function deletechatroom(data) {
     data,
     {
       headers: {
-        "Content-Type": "application/json",
-      },
+        "Content-Type": "application/json"
+      }
     }
   );
   return res["data"];
@@ -32,8 +45,8 @@ export async function getalluserchatrooms(data) {
     data,
     {
       headers: {
-        "Content-Type": "application/json",
-      },
+        "Content-Type": "application/json"
+      }
     }
   );
   return res["data"];
@@ -45,8 +58,8 @@ export async function getallinterestchatrooms(data) {
     data,
     {
       headers: {
-        "Content-Type": "application/json",
-      },
+        "Content-Type": "application/json"
+      }
     }
   );
   return res["data"];
@@ -57,8 +70,8 @@ export async function getallchatrooms() {
     process.env.GATSBY_BACKEND_LINK + "chatroom/getallchatrooms",
     {
       headers: {
-        "Content-Type": "application/json",
-      },
+        "Content-Type": "application/json"
+      }
     }
   );
   return res["data"];
@@ -70,8 +83,8 @@ export async function joinchatroom(data) {
     data,
     {
       headers: {
-        "Content-Type": "application/json",
-      },
+        "Content-Type": "application/json"
+      }
     }
   );
   return res["data"];
@@ -83,8 +96,8 @@ export async function leavechatroom(data) {
     data,
     {
       headers: {
-        "Content-Type": "application/json",
-      },
+        "Content-Type": "application/json"
+      }
     }
   );
   return res["data"];

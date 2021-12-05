@@ -1,16 +1,27 @@
 import {
   createSlice,
   createAsyncThunk,
-  createEntityAdapter,
+  createEntityAdapter
 } from "@reduxjs/toolkit";
 import {
   deletechatroom,
   getallchatrooms,
   getallinterestchatrooms,
   getalluserchatrooms,
+  getchatroom,
   joinchatroom,
   leavechatroom,
+  setchatroom
 } from "../../../services/chatroom/chatroom";
+import { chatroomMessagesExtraReducer } from "./chatroomMessagesExtraReducer";
+import { chatroomTasksExtraReducer } from "./chatroomTasksExtraReducer";
+
+export const getChatroom = createAsyncThunk(
+  "chatrooms/getchatroom",
+  async (chatroomDetails) => {
+    return getchatroom(chatroomDetails);
+  }
+);
 
 export const getAllUserChatrooms = createAsyncThunk(
   "chatrooms/getalluserchatrooms",
@@ -54,39 +65,25 @@ export const leaveChatroom = createAsyncThunk(
   }
 );
 
-// export const setEditChatroom = createAsyncThunk(
-//   "chatrooms/setchatroom",
-//   async ({
-//     chatroomDetails,
-//     oldChatroomDetails,
-//     // setIsAnnouncement,
-//   }) => {
-//     let data;
-//     let newDetails = chatroomDetails;
-//     if (chatroomDetails.id) {
-//       delete newDetails.creator_id;
-//       delete newDetails.creator_name;
+export const setChatroom = createAsyncThunk(
+  "chatrooms/setchatroom",
+  async ({ chatroomDetails, navigate, path }) => {
+    const data = await setchatroom(chatroomDetails);
+    if (data.success) navigate(path);
+    return data;
+  }
+);
 
-//       if (newDetails.name === oldAnnouncementDetails.name)
-//         delete newDetails.name;
-//       if (newDetails.priority === oldAnnouncementDetails.priority)
-//         delete newDetails.priority;
-//     }
-//     data = await wrapper(setannouncement, {
-//       ...newDetails,
-//       content: JSON.stringify(newDetails.content),
-//     });
-//     if (data.success && setIsAnnouncement) setIsAnnouncement(false);
-//     return {
-//       data,
-//       changes: newDetails,
-//       id: announcementDetails.id,
-//     };
-//   }
-// );
+export const chatroomsAdaptor = createEntityAdapter({
+  selectId: (chatroom) => chatroom._id
+});
 
-const chatroomsAdaptor = createEntityAdapter({
-  selectId: (chatroom) => chatroom._id,
+const chatroomMessagesAdaptor = createEntityAdapter({
+  selectId: (message) => message._id
+});
+
+const chatroomTasksAdaptor = createEntityAdapter({
+  selectId: (task) => task._id
 });
 
 const chatroomsSlice = createSlice({
@@ -96,11 +93,43 @@ const chatroomsSlice = createSlice({
     error: null,
     userRooms: [],
     interestedRooms: [],
+    messages: chatroomMessagesAdaptor.getInitialState({
+      status: null,
+      error: null
+    }),
+    tasks: chatroomTasksAdaptor.getInitialState({
+      status: null,
+      error: null
+    })
   }),
   reducers: {
     unsetInterestedRooms(state) {
       state.interestedRooms = [];
     },
+    socketSetChatroomMessage(state, { payload }) {
+      const { op, ...messageDetails } = payload;
+      chatroomMessagesAdaptor.addOne(state.messages, messageDetails);
+      chatroomsAdaptor.updateOne(state, {
+        id: messageDetails.chatroom_id,
+        changes: {
+          messages: [
+            ...state.entities[messageDetails.chatroom_id].messages,
+            messageDetails._id
+          ]
+        }
+      });
+    },
+    socketDeleteChatroomMessage(state, { payload: { _id, chatroom_id } }) {
+      chatroomMessagesAdaptor.removeOne(state.messages, _id);
+      chatroomsAdaptor.updateOne(state, {
+        id: chatroom_id,
+        changes: {
+          messages: state.entities[chatroom_id].messages.filter(
+            (id) => id !== _id
+          )
+        }
+      });
+    }
   },
   extraReducers: {
     [getAllUserChatrooms.pending]: (state) => {
@@ -112,10 +141,15 @@ const chatroomsSlice = createSlice({
     },
     [getAllUserChatrooms.fulfilled]: (state, { payload }) => {
       if (payload.success) {
-        chatroomsAdaptor.addMany(state, payload.data);
+        chatroomsAdaptor.addMany(
+          state,
+          payload.data.map((chatroom) => {
+            return { ...chatroom, messages: [] };
+          })
+        );
         state.userRooms = [
           ...state.userRooms,
-          ...payload.data.map((chatroom) => chatroom._id),
+          ...payload.data.map((chatroom) => chatroom._id)
         ];
         state.status = "success";
       } else {
@@ -132,7 +166,31 @@ const chatroomsSlice = createSlice({
     },
     [getAllChatrooms.fulfilled]: (state, { payload }) => {
       if (payload.success) {
-        chatroomsAdaptor.addMany(state, payload.data);
+        chatroomsAdaptor.addMany(
+          state,
+          payload.data.map((chatroom) => {
+            return { ...chatroom, messages: [] };
+          })
+        );
+        state.status = "success";
+      } else {
+        state.status = "failed";
+        state.error = payload.data;
+      }
+    },
+    [getChatroom.pending]: (state) => {
+      state.status = "get loading";
+    },
+    [getChatroom.rejected]: (state, { error }) => {
+      state.status = "failed";
+      state.error = error;
+    },
+    [getChatroom.fulfilled]: (state, { payload }) => {
+      if (payload.success) {
+        chatroomsAdaptor.addOne(state, {
+          ...payload.data,
+          messages: []
+        });
         state.status = "success";
       } else {
         state.status = "failed";
@@ -145,7 +203,25 @@ const chatroomsSlice = createSlice({
     },
     [joinChatroom.fulfilled]: (state, { payload, meta: { arg } }) => {
       if (payload.success) {
-        state.userRooms = [...state.userRooms, arg._id];
+        state.userRooms = [...state.userRooms, arg.chatroom_id];
+        state.status = "join complete";
+      } else {
+        state.status = "failed";
+        state.error = payload.data;
+      }
+    },
+    [setChatroom.rejected]: (state, { error }) => {
+      state.status = "failed";
+      state.error = error;
+    },
+    [setChatroom.fulfilled]: (state, { payload }) => {
+      if (payload.success) {
+        chatroomsAdaptor.addOne(state, {
+          ...payload.data,
+          messages: [],
+          tasks: []
+        });
+        state.userRooms = [...state.userRooms, payload.data._id];
         state.status = "success";
       } else {
         state.status = "failed";
@@ -175,10 +251,15 @@ const chatroomsSlice = createSlice({
 
     [getAllInterestChatrooms.fulfilled]: (state, { payload }) => {
       if (payload.success) {
-        chatroomsAdaptor.addMany(state, payload.data);
+        chatroomsAdaptor.addMany(
+          state,
+          payload.data.map((chatroom) => {
+            return { ...chatroom, messages: [] };
+          })
+        );
         state.interestedRooms = [
           ...state.interestedRooms,
-          ...payload.data.map((chatroom) => chatroom._id),
+          ...payload.data.map((chatroom) => chatroom._id)
         ];
         state.status = "success";
       } else {
@@ -228,15 +309,24 @@ const chatroomsSlice = createSlice({
         state.error = payload.data;
       }
     },
-  },
+    ...chatroomMessagesExtraReducer(chatroomMessagesAdaptor),
+    ...chatroomTasksExtraReducer(chatroomTasksAdaptor)
+  }
 });
 
 export const chatroomsSelector = chatroomsAdaptor.getSelectors(
   (state) => state.chatrooms
 );
 
-export const { unsetInterestedRooms } = chatroomsSlice.actions;
+export const {
+  unsetInterestedRooms,
+  socketSetChatroomMessage,
+  socketDeleteChatroomMessage
+} = chatroomsSlice.actions;
 
 export const selectChatroomsStatus = (state) => state.chatrooms.status;
-
+export const selectChatroomMessagesStatus = (state) =>
+  state.chatrooms.messages.status;
+export const selectChatroomTasksStatus = (state) =>
+  state.chatrooms.tasks.status;
 export default chatroomsSlice.reducer;

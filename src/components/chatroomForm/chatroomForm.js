@@ -1,17 +1,12 @@
 import React, { useState } from "react";
+import "./chatroomForm.scss";
 import { Chip, makeStyles } from "@material-ui/core";
 import { useDispatch, useSelector } from "react-redux";
 import { navigate } from "gatsby";
 import TextField from "@material-ui/core/TextField";
-
-import {
-  selectProfile,
-  setEditProfile,
-} from "../../redux/features/profile/profileSlice";
-import { unsetInterestedRooms } from "../../redux/features/chatroom/chatroomSlice";
-
 import { selectUser } from "../../redux/features/user/usersSlice";
 import FormInput from "../formInput/formInput";
+import { setChatroom } from "../../redux/features/chatroom/chatroomSlice";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -22,92 +17,90 @@ const useStyles = makeStyles((theme) => ({
     margin: 0,
     borderWidth: 2,
     borderStyle: "solid",
-    borderColor: theme.palette.secondary.light,
+    borderColor: theme.palette.secondary.light
   },
   list: {
     display: "flex",
     gap: "5px",
     flexWrap: "wrap",
-    listStyle: "none",
+    listStyle: "none"
   },
   center: {
     marginLeft: "auto",
     marginRight: "auto",
-    width: "max-content",
+    width: "max-content"
   },
   textfield: {
     "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
-      borderBottom: "1px solid #9D5BFF",
+      borderBottom: "1px solid #9D5BFF"
     },
 
     "& .MuiOutlinedInput-input": {
-      color: "#C4C4C4",
+      color: "#C4C4C4"
     },
 
     "& .MuiInputLabel-outlined": {
-      color: "#C4C4C4",
-    },
+      color: "#C4C4C4"
+    }
   },
   cancel: {
     backgroundColor: theme.palette.primary.light,
-    color: "#fff",
+    color: "#fff"
   },
   chips: {
     backgroundColor: "#9D5BFF",
-    color: "white",
-  },
+    color: "white"
+  }
 }));
 
-const ProfileForm = () => {
+const ChatroomForm = () => {
   const dispatch = useDispatch();
   const classes = useStyles();
   const currentUser = useSelector(selectUser);
-  const profile = useSelector(selectProfile);
-  console.log(currentUser?.id);
+
   const initialState = {
-    user_name: profile ? profile.user_name : "",
-    profile_img: null,
-    interests: profile ? profile.interests : [],
-    interest: "",
+    name: "",
+    description: "",
+    avatar: null,
+    user_ids: [currentUser?.id],
+    interests: [],
+    interest: ""
   };
 
-  const [profileDetails, setProfileDetails] = useState(initialState);
-  const [interestChanged, setInterestChanged] = useState(false);
+  const [chatroomDetails, setChatroomDetails] = useState(initialState);
 
   const handleDelete = (chipToDelete) => () => {
-    var array = [...profileDetails.interests]; // make a separate copy of the array
+    var array = [...chatroomDetails.interests]; // make a separate copy of the array
     if (chipToDelete !== -1) {
-      setInterestChanged(true);
       array.splice(chipToDelete, 1);
-      setProfileDetails({ ...profileDetails, interests: array });
+      setChatroomDetails({ ...chatroomDetails, interests: array });
     }
   };
 
   const handleChange = (event) => {
     switch (event.target.name) {
-      case "profile_img":
+      case "avatar":
         if (event.target.files.length > 0) {
-          setProfileDetails({
-            ...profileDetails,
-            profile_img: event.target.files[0],
+          setChatroomDetails({
+            ...chatroomDetails,
+            avatar: event.target.files[0]
           });
         }
         break;
       default:
         const { name, value } = event.target;
         console.log({ name });
-        setProfileDetails({ ...profileDetails, [name]: value });
+        setChatroomDetails({ ...chatroomDetails, [name]: value });
         if (name === "interest" && value.includes(",")) {
           const formatValue = value.replace(/[^A-Za-z0-9]/g, "").toLowerCase();
           if (formatValue.length) {
-            setProfileDetails({
-              ...profileDetails,
+            setChatroomDetails({
+              ...chatroomDetails,
               interests: [
-                ...new Set([...profileDetails.interests, formatValue]),
+                ...new Set([...chatroomDetails.interests, formatValue])
               ],
-              interest: "",
+              interest: ""
             });
-            setInterestChanged(true);
           }
         }
     }
@@ -117,38 +110,29 @@ const ProfileForm = () => {
     if (event.key === "Enter") {
       const formatValue = value.replace(/[^A-Za-z0-9]/g, "").toLowerCase();
       if (formatValue.length)
-        setProfileDetails({
-          ...profileDetails,
-          interests: [...new Set([...profileDetails.interests, formatValue])],
-          interest: "",
+        setChatroomDetails({
+          ...chatroomDetails,
+          interests: [...new Set([...chatroomDetails.interests, formatValue])],
+          interest: ""
         });
     } else {
       return;
     }
   };
+
   const handleSubmit = (event) => {
     event.preventDefault();
-    const { interest, ...otherProfileDetails } = profileDetails;
-    if (interestChanged) dispatch(unsetInterestedRooms());
+    const { interest, ...otherchatroomDetails } = chatroomDetails;
     dispatch(
-      setEditProfile({
-        profileDetails: {
-          id: profile?.id,
-          user_id: currentUser.id,
-          ...otherProfileDetails,
-        },
-        oldProfileDetails: profile,
+      setChatroom({
+        chatroomDetails: otherchatroomDetails,
         navigate,
-        path: "/profile",
+        path: "/profile"
       })
     );
   };
 
-  const { user_name, interests, interest } = profileDetails;
-
-  const closeForm = () => {
-    navigate("/profile");
-  };
+  const { name, description, interests, interest } = chatroomDetails;
 
   return (
     <div
@@ -156,21 +140,36 @@ const ProfileForm = () => {
       className="flex justify-center items-center"
     >
       <div className="flex flex-col flex-gap-2 w-4/5 md:w-1/2 lg:w-1/3 p-10 bg-black sm:w-7/12 md:w-1/2 lg:w-4/12 m-auto border-2 border-purple rounded-md">
-        <h1 className="text-4xl text-purple">Profile</h1>
+        <h1 className="text-4xl text-purple">Create Chatroom</h1>
         <FormInput
           type="text"
-          name="user_name"
-          value={user_name}
+          name="name"
+          value={name}
           handleChange={handleChange}
-          label="User name"
+          label="name"
           required
         />
-        <span className="ml-1 text-gray">Profile image</span>
+        <div className="group margin w-full">
+          <textarea
+            className="form-input"
+            name="description"
+            rows="4"
+            value={description}
+            onChange={handleChange}
+          />
+          <label
+            className={`${description.length ? "shrink" : ""} form-input-label`}
+          >
+            description
+          </label>
+        </div>
+
+        <span className="ml-1 text-gray">Avatar</span>
         <TextField
           className={classes.textfield}
           fullWidth
           type="file"
-          name="profile_img"
+          name="avatar"
           variant="outlined"
           helperText="Please upload your profile image"
           onChange={handleChange}
@@ -208,18 +207,10 @@ const ProfileForm = () => {
           >
             Save details
           </button>
-          {profile && (
-            <button
-              className="block px-3 bg-gray-dark text-white p-2 hover:shadow-md px-8 rounded-3xl"
-              onClick={closeForm}
-            >
-              Cancel
-            </button>
-          )}
         </div>
       </div>
     </div>
   );
 };
 
-export default ProfileForm;
+export default ChatroomForm;

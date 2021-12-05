@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { navigate } from "gatsby";
 import { selectUser } from "../../redux/features/user/usersSlice";
@@ -8,12 +8,16 @@ import { FaTrashAlt } from "react-icons/fa";
 import {
   deleteProfile,
   deleteProfileImage,
-  selectProfile,
+  selectProfile
 } from "../../redux/features/profile/profileSlice";
 import { makeStyles } from "@material-ui/core/styles";
 import { Avatar, Badge, Chip } from "@material-ui/core";
 import { red } from "@material-ui/core/colors";
 import Gallery from "../gallery/gallery";
+import {
+  getAllUserChatrooms,
+  selectChatroomsStatus
+} from "../../redux/features/chatroom/chatroomSlice";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -24,22 +28,22 @@ const useStyles = makeStyles((theme) => ({
     margin: 0,
     borderWidth: 2,
     borderStyle: "solid",
-    borderColor: theme.palette.secondary.light,
+    borderColor: theme.palette.secondary.light
   },
   list: {
     display: "flex",
     flexWrap: "wrap",
     gap: "5px",
-    listStyle: "none",
+    listStyle: "none"
   },
   center: {
     marginLeft: "auto",
     marginRight: "auto",
-    width: "max-content",
+    width: "max-content"
   },
   chips: {
     backgroundColor: "#9D5BFF",
-    color: "white",
+    color: "white"
   },
   avatar: {
     backgroundColor: theme.palette.secondary.light,
@@ -47,17 +51,17 @@ const useStyles = makeStyles((theme) => ({
     width: "54px !important",
     margin: "10px auto",
     "& img": {
-      width: "100%",
-    },
+      width: "100%"
+    }
   },
   buttonContainer: {
     marginLeft: "auto",
-    width: "max-content",
+    width: "max-content"
   },
   deleteBadge: {
     cursor: "pointer",
-    color: red[300],
-  },
+    color: red[300]
+  }
 }));
 
 const ProfileView = () => {
@@ -66,6 +70,17 @@ const ProfileView = () => {
 
   const profile = useSelector(selectProfile);
   const currentUser = useSelector(selectUser);
+  const userChatroomsIds = useSelector((state) => state.chatrooms.userRooms);
+  const chatroomStatus = useSelector(selectChatroomsStatus);
+
+  useEffect(() => {
+    if (
+      !userChatroomsIds ||
+      userChatroomsIds.length == 0 ||
+      (userChatroomsIds.length == 1 && chatroomStatus == "join complete")
+    )
+      dispatch(getAllUserChatrooms({ user_id: profile.user_id }));
+  }, []);
 
   const deleteUserProfile = () => {
     if (currentUser) {
@@ -73,9 +88,9 @@ const ProfileView = () => {
         deleteProfile({
           userDetails: {
             user_id: currentUser.id,
-            profile_id: profile.id,
+            profile_id: profile.id
           },
-          navigate,
+          navigate
         })
       );
     }
@@ -140,6 +155,12 @@ const ProfileView = () => {
               </ul>
             )}
             <div className="pt-10">
+              <button
+                className="block px-3 bg-gray-dark text-white p-2 hover:shadow-md px-8 rounded-3xl m-6"
+                onClick={() => navigate("/chatroom")}
+              >
+                Create chatroom
+              </button>
               <Gallery heading="Your Chatrooms" type="user" />
             </div>
           </div>
