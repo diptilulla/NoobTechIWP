@@ -95,6 +95,7 @@ const ProfileView = () => {
       );
     }
   };
+
   console.log(profile);
   return (
     <div
@@ -123,7 +124,7 @@ const ProfileView = () => {
                   anchorOrigin={{ vertical: "top", horizontal: "right" }}
                   badgeContent={
                     <FaTrashAlt
-                      className="cursor-pointer text-red"
+                      className="cursor-pointer text-gray"
                       onClick={() => dispatch(deleteProfileImage())}
                     />
                   }

@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   chatroomsSelector,
   selectChatroomTasksStatus
 } from "../redux/features/chatroom/chatroomSlice";
 import {
+  deleteTask,
   dropTask,
   moveTask
 } from "../redux/features/chatroom/chatroomTasksThunk";
@@ -85,6 +86,9 @@ function TaskContainer({ chatroom_id }) {
   const openForm = () => {
     setShowForm(true);
   };
+  const deletetask = useCallback((_id) => {
+    dispatch(deleteTask({ chatroom_id, _id }));
+  });
 
   return (
     <div>
@@ -116,6 +120,7 @@ function TaskContainer({ chatroom_id }) {
                             index={idx}
                             moveItem={moveItem}
                             status={s}
+                            deletetask={deletetask}
                           />
                         ))
                     ) : (

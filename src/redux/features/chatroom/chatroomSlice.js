@@ -46,8 +46,8 @@ export const getAllChatrooms = createAsyncThunk(
 
 export const deleteChatroom = createAsyncThunk(
   "chatrooms/deletechatroom",
-  async ({ id }) => {
-    return deletechatroom({ id });
+  async (details) => {
+    return deletechatroom(details);
   }
 );
 
@@ -268,32 +268,6 @@ const chatroomsSlice = createSlice({
       }
     },
 
-    // [setEditAnnouncement.rejected]: (state, { error }) => {
-    //   state.status = "failed";
-    //   state.error = error;
-    // },
-    // [setEditAnnouncement.fulfilled]: (state, { payload, meta: { arg } }) => {
-    //   if (payload.data.success) {
-    //     if (payload.id) {
-    //       chatroomsAdaptor.updateOne(state, {
-    //         id: payload.id,
-    //         changes: payload.changes,
-    //       });
-    //       state.status = "edit complete";
-    //     } else {
-    //       chatroomsAdaptor.addOne(state, payload.data.data);
-    //       state.status = "set complete";
-    //       state.classAnnouncements = [
-    //         ...state.classAnnouncements,
-    //         payload.data.data.id,
-    //       ];
-    //     }
-    //   } else {
-    //     state.status = "failed";
-    //     state.error = payload.data.data;
-    //   }
-    // },
-
     [deleteChatroom.rejected]: (state, { error }) => {
       state.status = "failed";
       state.error = error;
@@ -301,8 +275,11 @@ const chatroomsSlice = createSlice({
 
     [deleteChatroom.fulfilled]: (state, { meta: { arg }, payload }) => {
       if (payload.success) {
-        chatroomsAdaptor.removeOne(state, arg._id);
-        state.userRooms = state.userRooms.filter((cid) => cid !== arg._id);
+        console.log({arg})
+        chatroomsAdaptor.removeOne(state, arg.chatroom_id);
+        state.userRooms = state.userRooms.filter(
+          (cid) => cid !== arg.chatroom_id
+        );
         state.status = "delete success";
       } else {
         state.status = "failed";

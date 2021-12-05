@@ -1,8 +1,8 @@
 import React, { Fragment, useState, useRef } from "react";
 import { useDrag, useDrop } from "react-dnd";
-import Window from "./window";
+import { FaTrashAlt } from "react-icons/fa";
 
-function Item({ item, index, moveItem, status }) {
+function Item({ item, index, moveItem, status, deletetask }) {
   const ref = useRef(null);
   const [, drop] = useDrop({
     accept: "ITEM",
@@ -57,6 +57,10 @@ function Item({ item, index, moveItem, status }) {
         className={`${isDragging && "opacity-0"} item`}
         // onClick={onOpen}
       >
+        <FaTrashAlt
+          className="cursor-pointer text-small block ml-auto text-gray"
+          onClick={() => deletetask(item._id)}
+        />
         <div
           className={"color-bar"}
           style={{ backgroundColor: status.color }}

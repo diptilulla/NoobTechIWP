@@ -101,15 +101,21 @@ export const chatroomTasksExtraReducer = (chatroomTasksAdaptor) => ({
     state.tasks.error = error;
   },
 
-  [deleteTask.fulfilled]: (state, { meta: { arg }, payload }) => {
+  [deleteTask.fulfilled]: (
+    state,
+    {
+      meta: {
+        arg: { _id, chatroom_id }
+      },
+      payload
+    }
+  ) => {
     if (payload.success) {
-      chatroomTasksAdaptor.removeOne(state.tasks, arg._id);
+      chatroomTasksAdaptor.removeOne(state.tasks, _id);
       chatroomsAdaptor.updateOne(state, {
-        id: arg.chatroom_id,
+        id: chatroom_id,
         changes: {
-          tasks: state.entities[arg.chatroom_id].tasks.filter(
-            (tid) => tid !== arg._id
-          )
+          tasks: state.entities[chatroom_id].tasks.filter((tid) => tid !== _id)
         }
       });
       state.tasks.status = "delete success";

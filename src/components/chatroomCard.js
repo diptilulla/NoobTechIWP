@@ -5,10 +5,12 @@ import { Avatar } from "@material-ui/core";
 import { HiOutlineUserCircle } from "react-icons/hi";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  deleteChatroom,
   joinChatroom,
   leaveChatroom
 } from "../redux/features/chatroom/chatroomSlice";
 import { selectUser } from "../redux/features/user/usersSlice";
+import { FaTrashAlt } from "react-icons/fa";
 
 const useStyles = makeStyles((theme) => ({
   avatar: {
@@ -22,18 +24,33 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-function ChatroomCard({ your, details: { _id, name, description, avatar } }) {
+function ChatroomCard({
+  your,
+  details: { _id, name, description, avatar, user_ids }
+}) {
   const dispatch = useDispatch();
   const classes = useStyles();
   const currentUser = useSelector(selectUser);
   console.log({ _id });
+
+  const deletechatroom = () => {
+    dispatch(deleteChatroom({ chatroom_id: _id }));
+  };
+
   return (
     <div className="flex flex-col gap-2 border-2 border-purple rounded-md bg-black p-5">
+      {currentUser && currentUser.id === user_ids[0] && (
+        <FaTrashAlt
+          className="cursor-pointer text-gray block ml-auto"
+          onClick={deletechatroom}
+        />
+      )}
       {avatar ? (
         <Avatar src={avatar} className={classes.avatar} />
       ) : (
         <HiOutlineUserCircle className={classes.avatar} />
       )}
+
       <h1 className="text-2xl text-purple">{name}</h1>
       <p className="text-gray-light">{description}</p>
       <div className="flex gap-x-4 mx-auto">
